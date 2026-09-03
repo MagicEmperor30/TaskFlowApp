@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Profile | TaskFlow</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/main.css" rel="stylesheet">
+</head>
+<body>
+<div th:replace="~{fragments/sidebar :: sidebar('profile')}"></div>
+
+<div class="main">
+    <div class="topbar">
+        <div class="page-title" style="font-size:1rem;">Profile</div>
+        <div class="topbar-right">
+            <div class="avatar" th:text="${#strings.toUpperCase(#strings.substring(user.username,0,1))}">D</div>
+        </div>
+    </div>
+
+    <div class="content">
+        <div style="max-width:640px;">
+
+            <!-- Profile card -->
+            <div class="card-custom mb-4">
+                <div class="d-flex align-items-center gap-4">
+                    <div class="avatar-lg"
+                         th:text="${#strings.toUpperCase(#strings.substring(user.username,0,1))}">D</div>
+                    <div>
+                        <h5 style="font-weight:700; margin-bottom:4px;" th:text="${user.username}"></h5>
+                        <div class="task-meta" th:text="${user.email}"></div>
+                        <div class="task-meta mt-1">
+                            <i class="bi bi-calendar me-1"></i>
+                            Joined <span th:text="${#temporals.format(user.createdAt, 'dd MMM yyyy')}"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mt-4 pt-4" style="border-top:1px solid var(--border);">
+                    <div class="col-4 text-center">
+                        <div style="font-size:1.4rem; font-weight:700;" th:text="${totalProjects}">0</div>
+                        <div class="task-meta">Projects</div>
+                    </div>
+                    <div class="col-4 text-center">
+                        <div style="font-size:1.4rem; font-weight:700;" th:text="${totalTasks}">0</div>
+                        <div class="task-meta">Tasks</div>
+                    </div>
+                    <div class="col-4 text-center">
+                        <div style="font-size:1.4rem; font-weight:700;" th:text="${completedTasks}">0</div>
+                        <div class="task-meta">Completed</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Change password -->
+            <div class="card-custom">
+                <h6 style="font-weight:700; margin-bottom:20px;">Change Password</h6>
+
+                <div th:if="${error}" class="alert-custom alert-error mb-3" th:text="${error}"></div>
+                <div th:if="${success}" class="alert-custom alert-success mb-3" th:text="${success}"></div>
+
+                <form method="post" action="/profile/change-password">
+                    <div class="mb-3">
+                        <label class="form-label">Current Password</label>
+                        <input type="password" name="currentPassword" class="form-control"
+                               placeholder="Enter current password" required/>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">New Password</label>
+                        <input type="password" name="newPassword" class="form-control"
+                               placeholder="Min 8 chars, uppercase, lowercase, number" required/>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">Confirm New Password</label>
+                        <input type="password" name="confirmPassword" class="form-control"
+                               placeholder="Repeat new password" required/>
+                    </div>
+                    <button type="submit" class="btn-primary-custom">
+                        <i class="bi bi-lock"></i> Update Password
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

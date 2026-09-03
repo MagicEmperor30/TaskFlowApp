@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>My Tasks | TaskFlow</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/main.css" rel="stylesheet">
+</head>
+<body>
+<div th:replace="~{fragments/sidebar :: sidebar('tasks')}"></div>
+
+<div class="main">
+    <div class="topbar">
+        <div class="search-bar">
+            <i class="bi bi-search"></i>
+            <input type="text" placeholder="Search tasks..." id="taskSearch"/>
+        </div>
+        <div class="topbar-right">
+            <div class="avatar" th:text="${#strings.toUpperCase(#strings.substring(user.username,0,1))}">D</div>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="page-header">
+            <div>
+                <div class="page-title">My Tasks</div>
+                <div class="page-subtitle">All tasks assigned to you</div>
+            </div>
+        </div>
+
+        <!-- Filter pills -->
+        <div class="d-flex gap-2 mb-4 flex-wrap">
+            <button onclick="filterTasks('ALL')" class="badge-status badge-active" style="border:none; cursor:pointer; padding:7px 16px;">All</button>
+            <button onclick="filterTasks('TODO')" class="badge-status badge-todo" style="border:none; cursor:pointer; padding:7px 16px;">Todo</button>
+            <button onclick="filterTasks('IN_PROGRESS')" class="badge-status badge-inprogress" style="border:none; cursor:pointer; padding:7px 16px;">In Progress</button>
+            <button onclick="filterTasks('IN_REVIEW')" class="badge-status badge-inreview" style="border:none; cursor:pointer; padding:7px 16px;">In Review</button>
+            <button onclick="filterTasks('DONE')" class="badge-status badge-done" style="border:none; cursor:pointer; padding:7px 16px;">Done</button>
+        </div>
+
+        <div id="taskList">
+            <div th:each="task : ${tasks}"
+                 class="task-item"
+                 th:classappend="${task.status.name() == 'DONE'} ? ' done' :
+                                 (${task.priority.name() == 'URGENT'} ? ' urgent' :
+                                 (${task.status.name() == 'IN_PROGRESS'} ? ' in-progress' : ''))"
+                 th:attr="data-status=${task.status.name()}">
+
+                <div class="d-flex justify-content-between align-items-start">
+                    <div style="flex:1; min-width:0;">
+                        <a th:href="@{/tasks/{id}(id=${task.id})}"
+                           class="task-name" th:text="${task.title}">Task</a>
+                        <div class="task-meta mt-1" th:text="${task.project.name}"></div>
+                        <div class="d-flex gap-2 mt-2 flex-wrap">
+                            <span class="badge-status"
+                                  th:classappend="${task.priority.name() == 'LOW'} ? 'badge-low' :
+                                                  (${task.priority.name() == 'MEDIUM'} ? 'badge-medium' :
+                                                  (${task.priority.name() == 'HIGH'} ? 'badge-high' : 'badge-urgent'))"
+                                  th:text="${task.priority}"></span>
+                            <span class="badge-status"
+                                  th:classappend="${task.status.name() == 'DONE'} ? 'badge-done' :
+                                                  (${task.status.name() == 'IN_PROGRESS'} ? 'badge-inprogress' :
+                                                  (${task.status.name() == 'IN_REVIEW'} ? 'badge-inreview' : 'badge-todo'))"
+                                  th:text="${task.status}"></span>
+                            <span th:if="${task.deadline != null}" class="task-meta"
+                                  th:classappend="${task.deadline.isBefore(T(java.time.LocalDate).now())} ? 'overdue' :
+                                                  (${task.deadline.isBefore(T(java.time.LocalDate).now().plusDays(3))} ? 'due-soon' : '')">
+                                <i class="bi bi-clock me-1"></i>
+                                <span th:text="${task.deadline}"></span>
+                            </span>
+                        </div>
+                    </div>
+                    <a th:href="@{/tasks/{id}(id=${task.id})}" class="icon-btn ms-2">
+                        <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${#lists.isEmpty(tasks)}" class="empty-state">
+            <i class="bi bi-check2-all"></i>
+            <p>No tasks assigned to you yet</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    function filterTasks(status) {
+        document.querySelectorAll('#taskList .task-item').forEach(item => {
+            if (status === 'ALL' || item.dataset.status === status) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+
+    document.getElementById('taskSearch').addEventListener('input', function() {
+        const q = this.value.toLowerCase();
+        document.querySelectorAll('#taskList .task-item').forEach(item => {
+            item.style.display = item.innerText.toLowerCase().includes(q) ? 'block' : 'none';
+        });
+    });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

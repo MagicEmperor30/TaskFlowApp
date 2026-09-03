@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard | TaskFlow</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563EB;
+            --primary-dark: #1D4ED8;
+            --bg: #F8FAFC;
+            --card: #FFFFFF;
+            --text-main: #0F172A;
+            --text-secondary: #64748B;
+            --border: #E2E8F0;
+            --success: #16A34A;
+            --warning: #F59E0B;
+            --danger: #DC2626;
+            --info: #0891B2;
+            --sidebar-width: 240px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { background: var(--bg); font-family: 'Segoe UI', sans-serif; color: var(--text-main); display: flex; min-height: 100vh; }
+
+        /* Sidebar */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: #fff;
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 24px 16px;
+            position: fixed;
+            top: 0; left: 0; bottom: 0;
+            z-index: 100;
+        }
+        .sidebar-logo {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 36px;
+            padding-left: 8px;
+        }
+        .sidebar-logo i { font-size: 1.5rem; }
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            margin-bottom: 4px;
+        }
+        .nav-item:hover { background: #EFF6FF; color: var(--primary); }
+        .nav-item.active { background: var(--primary); color: #fff; }
+        .nav-item i { font-size: 1.1rem; }
+        .sidebar-bottom { margin-top: auto; }
+        .create-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 12px;
+            width: 100%;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .create-btn:hover { background: var(--primary-dark); color: #fff; }
+
+        /* Main content */
+        .main {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Top bar */
+        .topbar {
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            padding: 14px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 99;
+        }
+        .search-bar {
+            display: flex;
+            align-items: center;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 8px 16px;
+            gap: 10px;
+            width: 320px;
+        }
+        .search-bar input {
+            border: none;
+            background: transparent;
+            outline: none;
+            font-size: 0.9rem;
+            color: var(--text-main);
+            width: 100%;
+        }
+        .search-bar i { color: var(--text-secondary); }
+        .topbar-right { display: flex; align-items: center; gap: 16px; }
+        .icon-btn {
+            width: 38px; height: 38px;
+            border-radius: 50%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--text-secondary);
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .icon-btn:hover { background: #EFF6FF; color: var(--primary); }
+
+        /* Content area */
+        .content { padding: 28px; flex: 1; }
+
+        /* Stats cards */
+        .stat-card {
+            background: #fff;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .stat-icon-wrap {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+        .stat-value { font-size: 1.6rem; font-weight: 700; color: var(--text-main); line-height: 1; }
+        .stat-label { font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px; }
+
+        /* Section title */
+        .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .section-title a {
+            font-size: 0.8rem;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        /* Project card */
+        .project-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 18px;
+            margin-bottom: 12px;
+            transition: box-shadow 0.2s;
+        }
+        .project-card:hover { box-shadow: 0 4px 16px rgba(37,99,235,0.08); }
+        .project-name {
+            font-weight: 600;
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 0.95rem;
+        }
+        .project-name:hover { color: var(--primary); }
+        .project-desc { font-size: 0.8rem; color: var(--text-secondary); margin-top: 4px; }
+        .progress-bar-wrap { margin-top: 14px; }
+        .progress-label { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 6px; }
+        .progress { height: 6px; border-radius: 99px; background: var(--bg); }
+        .progress-bar { border-radius: 99px; background: var(--primary); }
+
+        /* Task item */
+        .task-item {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--primary);
+            transition: box-shadow 0.2s;
+        }
+        .task-item:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+        .task-item.done { border-left-color: var(--success); }
+        .task-item.urgent { border-left-color: var(--danger); }
+        .task-item.in-progress { border-left-color: var(--warning); }
+        .task-name { font-weight: 600; font-size: 0.9rem; color: var(--text-main); text-decoration: none; }
+        .task-name:hover { color: var(--primary); }
+        .task-meta { font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px; }
+
+        /* Badges */
+        .badge-status {
+            font-size: 0.7rem;
+            padding: 3px 10px;
+            border-radius: 99px;
+            font-weight: 600;
+        }
+        .badge-todo { background: #F1F5F9; color: var(--text-secondary); }
+        .badge-inprogress { background: #FEF3C7; color: #92400E; }
+        .badge-inreview { background: #E0F2FE; color: #075985; }
+        .badge-done { background: #DCFCE7; color: #166534; }
+        .badge-active { background: #DCFCE7; color: #166534; }
+        .badge-onhold { background: #FEF3C7; color: #92400E; }
+        .badge-completed { background: #DBEAFE; color: #1E40AF; }
+        .badge-archived { background: #F1F5F9; color: var(--text-secondary); }
+
+        /* Avatar */
+        .avatar {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        /* Right panel */
+        .right-panel {
+            width: 280px;
+            flex-shrink: 0;
+        }
+        .user-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .user-avatar-lg {
+            width: 64px; height: 64px;
+            border-radius: 50%;
+            background: var(--primary);
+            color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin: 0 auto 12px;
+        }
+        .user-name { font-weight: 700; font-size: 1rem; color: var(--text-main); }
+        .user-email { font-size: 0.8rem; color: var(--text-secondary); margin-top: 2px; }
+        .quick-stat {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+        .quick-stat-item { text-align: center; }
+        .quick-stat-val { font-weight: 700; font-size: 1.1rem; color: var(--text-main); }
+        .quick-stat-lbl { font-size: 0.7rem; color: var(--text-secondary); }
+
+        .panel-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 18px;
+            margin-bottom: 16px;
+        }
+        .panel-card-title { font-weight: 600; font-size: 0.9rem; margin-bottom: 14px; color: var(--text-main); }
+
+        .deadline-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        .deadline-item:last-child { border-bottom: none; }
+        .deadline-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+        /* Overdue highlight */
+        .overdue { color: var(--danger); }
+        .due-soon { color: var(--warning); }
+
+        .empty-state { text-align: center; padding: 32px 0; color: var(--text-secondary); }
+        .empty-state i { font-size: 2.5rem; display: block; margin-bottom: 8px; opacity: 0.4; }
+        .empty-state p { font-size: 0.85rem; }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <i class="bi bi-check2-square"></i> TaskFlow
+    </div>
+
+    <nav>
+        <a href="/dashboard" class="nav-item active">
+            <i class="bi bi-grid-1x2-fill"></i> Dashboard
+        </a>
+        <a href="/tasks/my" class="nav-item">
+            <i class="bi bi-list-task"></i> My Tasks
+        </a>
+        <a href="/projects" class="nav-item">
+            <i class="bi bi-folder2-open"></i> Projects
+        </a>
+        <a href="/profile" class="nav-item">
+            <i class="bi bi-person"></i> Profile
+        </a>
+    </nav>
+
+    <div class="sidebar-bottom">
+        <a href="/projects/new" class="create-btn">
+            <i class="bi bi-plus-lg"></i> Create Project
+        </a>
+        <a href="/logout" class="nav-item mt-3" style="color: #DC2626;">
+            <i class="bi bi-box-arrow-right"></i> Logout
+        </a>
+    </div>
+</aside>
+
+<!-- Main -->
+<div class="main">
+
+    <!-- Topbar -->
+    <div class="topbar">
+        <div class="search-bar">
+            <i class="bi bi-search"></i>
+            <input type="text" placeholder="Search projects, tasks..."/>
+        </div>
+        <div class="topbar-right">
+            <a href="/tasks/my" class="icon-btn"><i class="bi bi-bell"></i></a>
+            <div class="avatar" th:text="${#strings.toUpperCase(#strings.substring(user.username, 0, 1))}">D</div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+        <div class="d-flex gap-4">
+
+            <!-- Left + Center -->
+            <div style="flex:1; min-width:0;">
+
+                <!-- Welcome -->
+                <div class="mb-4">
+                    <h5 style="font-weight:700;">Good day, <span th:text="${user.username}"></span> 👋</h5>
+                    <p style="color:var(--text-secondary); font-size:0.85rem; margin-top:4px;">
+                        Here's what's happening with your work today.
+                    </p>
+                </div>
+
+                <!-- Stats -->
+                <div class="row g-3 mb-4">
+                    <div class="col-6 col-xl-3">
+                        <div class="stat-card">
+                            <div class="stat-icon-wrap" style="background:#EFF6FF;">
+                                <i class="bi bi-folder-fill" style="color:var(--primary);"></i>
+                            </div>
+                            <div>
+                                <div class="stat-value" th:text="${projects.size()}">0</div>
+                                <div class="stat-label">Projects</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <div class="stat-card">
+                            <div class="stat-icon-wrap" style="background:#FEF3C7;">
+                                <i class="bi bi-list-task" style="color:#D97706;"></i>
+                            </div>
+                            <div>
+                                <div class="stat-value" th:text="${myTasks.size()}">0</div>
+                                <div class="stat-label">My Tasks</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <div class="stat-card">
+                            <div class="stat-icon-wrap" style="background:#DCFCE7;">
+                                <i class="bi bi-check-circle-fill" style="color:var(--success);"></i>
+                            </div>
+                            <div>
+                                <div class="stat-value" th:text="${completedTasks}">0</div>
+                                <div class="stat-label">Completed</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-xl-3">
+                        <div class="stat-card">
+                            <div class="stat-icon-wrap" style="background:#FEE2E2;">
+                                <i class="bi bi-clock-fill" style="color:var(--danger);"></i>
+                            </div>
+                            <div>
+                                <div class="stat-value" th:text="${pendingTasks}">0</div>
+                                <div class="stat-label">Pending</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabs: Active / Completed tasks -->
+                <div class="mb-3" style="border-bottom: 2px solid var(--border);">
+                    <span style="font-weight:600; font-size:0.95rem; padding-bottom:10px; border-bottom:2px solid var(--primary); margin-right:20px; display:inline-block; color:var(--primary);">Active Tasks</span>
+                    <span style="font-size:0.95rem; color:var(--text-secondary); padding-bottom:10px; display:inline-block;">
+                        Completed (<span th:text="${completedTasks}">0</span>)
+                    </span>
+                </div>
+
+                <!-- Active task cards (2 col) -->
+                <div class="row g-3 mb-4">
+                    <div th:each="task, iterStat : ${myTasks}"
+                         th:if="${task.status.name() != 'DONE' and iterStat.index < 4}"
+                         class="col-md-6">
+                        <div class="project-card" style="margin-bottom:0;">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <a th:href="@{/tasks/{id}(id=${task.id})}"
+                                   class="project-name" th:text="${task.title}">Task Title</a>
+                                <span class="badge-status"
+                                      th:classappend="${task.priority.name() == 'URGENT'} ? 'badge-inprogress' : 'badge-todo'"
+                                      th:text="${task.priority}"></span>
+                            </div>
+                            <div class="task-meta mt-1" th:text="${task.project.name}"></div>
+                            <div class="d-flex align-items-center justify-content-between mt-3">
+                                <div th:if="${task.deadline != null}"
+                                     class="d-flex align-items-center gap-1 task-meta"
+                                     th:classappend="${task.deadline.isBefore(T(java.time.LocalDate).now())} ? 'overdue' :
+                                                     (${task.deadline.isBefore(T(java.time.LocalDate).now().plusDays(3))} ? 'due-soon' : '')">
+                                    <i class="bi bi-clock"></i>
+                                    <span th:text="${task.deadline}"></span>
+                                </div>
+                                <span th:if="${task.deadline == null}" class="task-meta">No deadline</span>
+                                <span class="badge-status badge-inprogress"
+                                      th:if="${task.status.name() == 'IN_PROGRESS'}"
+                                      th:text="${task.status}"></span>
+                                <span class="badge-status badge-inreview"
+                                      th:if="${task.status.name() == 'IN_REVIEW'}"
+                                      th:text="${task.status}"></span>
+                                <span class="badge-status badge-todo"
+                                      th:if="${task.status.name() == 'TODO'}"
+                                      th:text="${task.status}"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div th:if="${#lists.isEmpty(myTasks)}" class="col-12">
+                        <div class="empty-state">
+                            <i class="bi bi-check2-all"></i>
+                            <p>No active tasks assigned to you</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Projects -->
+                <div class="section-title">
+                    <span>My Projects</span>
+                    <a href="/projects">See all</a>
+                </div>
+
+                <div th:each="project, iterStat : ${projects}" th:if="${iterStat.index < 4}">
+                    <div class="project-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <a th:href="@{/projects/{id}(id=${project.id})}"
+                                   class="project-name" th:text="${project.name}">Project</a>
+                                <div class="project-desc" th:text="${project.description}"></div>
+                            </div>
+                            <span class="badge-status"
+                                  th:classappend="${project.status.name() == 'ACTIVE'} ? 'badge-active' :
+                                                  (${project.status.name() == 'COMPLETED'} ? 'badge-completed' :
+                                                  (${project.status.name() == 'ON_HOLD'} ? 'badge-onhold' : 'badge-archived'))"
+                                  th:text="${project.status}"></span>
+                        </div>
+                        <div class="progress-bar-wrap">
+                            <div class="progress-label">
+                                <span>Progress</span>
+                                <span th:text="${projectProgressMap[project.id]} + '%'">0%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar"
+                                     th:style="'width:' + ${projectProgressMap[project.id]} + '%'"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div th:if="${#lists.isEmpty(projects)}" class="empty-state">
+                    <i class="bi bi-folder-x"></i>
+                    <p>No projects yet. Create your first one!</p>
+                </div>
+
+            </div>
+
+            <!-- Right Panel -->
+            <div class="right-panel">
+
+                <!-- User card -->
+                <div class="user-card">
+                    <div class="user-avatar-lg"
+                         th:text="${#strings.toUpperCase(#strings.substring(user.username, 0, 1))}">D</div>
+                    <div class="user-name" th:text="${user.username}">Username</div>
+                    <div class="user-email" th:text="${user.email}">email@example.com</div>
+                    <div class="quick-stat">
+                        <div class="quick-stat-item">
+                            <div class="quick-stat-val" th:text="${projects.size()}">0</div>
+                            <div class="quick-stat-lbl">Projects</div>
+                        </div>
+                        <div class="quick-stat-item">
+                            <div class="quick-stat-val" th:text="${myTasks.size()}">0</div>
+                            <div class="quick-stat-lbl">Tasks</div>
+                        </div>
+                        <div class="quick-stat-item">
+                            <div class="quick-stat-val" th:text="${completedTasks}">0</div>
+                            <div class="quick-stat-lbl">Done</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upcoming deadlines -->
+                <div class="panel-card">
+                    <div class="panel-card-title">
+                        <i class="bi bi-calendar-event me-2" style="color:var(--primary);"></i>Upcoming Deadlines
+                    </div>
+                    <div th:each="task : ${myTasks}"
+                         th:if="${task.deadline != null and task.status.name() != 'DONE'}">
+                        <div class="deadline-item">
+                            <div class="deadline-dot"
+                                 th:style="${task.deadline.isBefore(T(java.time.LocalDate).now())} ? 'background:#DC2626' :
+                                           (${task.deadline.isBefore(T(java.time.LocalDate).now().plusDays(3))} ? 'background:#F59E0B' : 'background:#2563EB')">
+                            </div>
+                            <div style="flex:1; min-width:0;">
+                                <div style="font-size:0.82rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"
+                                     th:text="${task.title}"></div>
+                                <div class="task-meta"
+                                     th:classappend="${task.deadline.isBefore(T(java.time.LocalDate).now())} ? 'overdue' :
+                                                     (${task.deadline.isBefore(T(java.time.LocalDate).now().plusDays(3))} ? 'due-soon' : '')"
+                                     th:text="${task.deadline}"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="empty-state" th:if="${#lists.isEmpty(myTasks)}" style="padding:16px 0;">
+                        <p>No upcoming deadlines</p>
+                    </div>
+                </div>
+
+                <!-- Quick actions -->
+                <div class="panel-card">
+                    <div class="panel-card-title">Quick Actions</div>
+                    <a href="/projects/new" class="create-btn mb-2 d-flex">
+                        <i class="bi bi-plus-lg"></i> New Project
+                    </a>
+                    <a href="/tasks/my" class="nav-item" style="background:var(--bg); border-radius:10px; margin-top:8px;">
+                        <i class="bi bi-list-task"></i> View All Tasks
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

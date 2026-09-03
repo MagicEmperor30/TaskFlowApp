@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Task | TaskFlow</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="/css/main.css" rel="stylesheet">
+</head>
+<body>
+<div th:replace="~{fragments/sidebar :: sidebar('tasks')}"></div>
+
+<div class="main">
+    <div class="topbar">
+        <div class="d-flex align-items-center gap-2" style="color:var(--text-secondary); font-size:0.9rem;">
+            <a th:href="@{/projects/{id}(id=${task.project.id})}"
+               style="color:var(--text-secondary); text-decoration:none;" th:text="${task.project.name}">Project</a>
+            <i class="bi bi-chevron-right"></i>
+            <span style="color:var(--text-main); font-weight:600;" th:text="${task.title}">Task</span>
+        </div>
+        <div class="topbar-right">
+            <div class="avatar" th:text="${#strings.toUpperCase(#strings.substring(user.username,0,1))}">D</div>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="d-flex gap-4">
+
+            <!-- Main -->
+            <div style="flex:1; min-width:0;">
+                <div class="card-custom mb-4">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h5 style="font-weight:700;" th:text="${task.title}">Task Title</h5>
+                        <span class="badge-status"
+                              th:classappend="${task.status.name() == 'DONE'} ? 'badge-done' :
+                                              (${task.status.name() == 'IN_PROGRESS'} ? 'badge-inprogress' :
+                                              (${task.status.name() == 'IN_REVIEW'} ? 'badge-inreview' : 'badge-todo'))"
+                              th:text="${task.status}"></span>
+                    </div>
+                    <p class="project-desc" th:text="${task.description != null and !task.description.isEmpty()} ? ${task.description} : 'No description'"></p>
+
+                    <div class="row g-3 mt-2">
+                        <div class="col-auto">
+                            <div class="task-meta">Priority</div>
+                            <span class="badge-status mt-1"
+                                  th:classappend="${task.priority.name() == 'LOW'} ? 'badge-low' :
+                                                  (${task.priority.name() == 'MEDIUM'} ? 'badge-medium' :
+                                                  (${task.priority.name() == 'HIGH'} ? 'badge-high' : 'badge-urgent'))"
+                                  th:text="${task.priority}"></span>
+                        </div>
+                        <div class="col-auto">
+                            <div class="task-meta">Assigned To</div>
+                            <div style="font-weight:600; font-size:0.85rem; margin-top:4px;"
+                                 th:text="${task.assignedUser != null} ? ${task.assignedUser.username} : 'Unassigned'"></div>
+                        </div>
+                        <div class="col-auto" th:if="${task.deadline != null}">
+                            <div class="task-meta">Deadline</div>
+                            <div style="font-weight:600; font-size:0.85rem; margin-top:4px;"
+                                 th:classappend="${task.deadline.isBefore(T(java.time.LocalDate).now())} ? 'overdue' : ''"
+                                 th:text="${task.deadline}"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Update status -->
+                <div class="card-custom mb-4">
+                    <div class="section-title" style="margin-bottom:12px;">
+                        <span>Update Status</span>
+                    </div>
+                    <form method="post" th:action="@{/tasks/{id}/status(id=${task.id})}" class="d-flex gap-3 align-items-center">
+                        <select name="status" class="form-select" style="max-width:200px;">
+                            <option th:each="s : ${statuses}"
+                                    th:value="${s}"
+                                    th:text="${s}"
+                                    th:selected="${s == task.status}"></option>
+                        </select>
+                        <button type="submit" class="btn-primary-custom">
+                            <i class="bi bi-check-lg"></i> Update
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Subtasks -->
+                <div class="card-custom">
+                    <div class="section-title" style="margin-bottom:12px;">
+                        <span>Subtasks</span>
+                        <span class="task-meta" th:text="${subtasks.size()} + ' total'"></span>
+                    </div>
+
+                    <div th:each="subtask : ${subtasks}"
+                         class="subtask-item"
+                         th:classappend="${subtask.completed} ? ' completed' : ''">
+                        <form th:action="@{/tasks/subtasks/{id}/toggle(id=${subtask.id})}" method="post">
+                            <button type="submit" style="background:none; border:none; cursor:pointer; padding:0;">
+                                <i class="bi"
+                                   th:classappend="${subtask.completed} ? 'bi-check-circle-fill text-success' : 'bi-circle'"
+                                   style="font-size:1.1rem;"></i>
+                            </button>
+                        </form>
+                        <span style="font-size:0.9rem;" th:text="${subtask.title}"></span>
+                    </div>
+
+                    <div th:if="${#lists.isEmpty(subtasks)}" class="empty-state" style="padding:24px 0;">
+                        <i class="bi bi-check2-square" style="font-size:1.8rem;"></i>
+                        <p>No subtasks yet</p>
+                    </div>
+
+                    <!-- Add subtask -->
+                    <form th:action="@{/tasks/{id}/subtasks(id=${task.id})}" method="post"
+                          class="d-flex gap-2 mt-3 pt-3" style="border-top:1px solid var(--border);">
+                        <input type="text" name="title" class="form-control"
+                               placeholder="Add a subtask..." required/>
+                        <button type="submit" class="btn-primary-custom" style="white-space:nowrap;">
+                            <i class="bi bi-plus-lg"></i> Add
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Right panel -->
+            <div style="width:260px; flex-shrink:0;">
+                <div class="card-custom mb-4">
+                    <div class="panel-card-title mb-3" style="font-weight:600; font-size:0.9rem;">Task Info</div>
+                    <div class="task-meta mb-1">Project</div>
+                    <a th:href="@{/projects/{id}(id=${task.project.id})}"
+                       style="font-weight:600; font-size:0.85rem; color:var(--primary); text-decoration:none;"
+                       th:text="${task.project.name}"></a>
+
+                    <div class="task-meta mt-3 mb-1">Created</div>
+                    <div style="font-size:0.85rem; font-weight:600;"
+                         th:text="${#temporals.format(task.createdAt, 'dd MMM yyyy')}"></div>
+
+                    <div class="task-meta mt-3 mb-1">Subtask Progress</div>
+                    <div style="font-size:0.85rem; font-weight:600; margin-bottom:6px;">
+                        <span th:text="${subtasks?.?[completed]?.size() ?: 0}">0</span>
+                        /
+                        <span th:text="${subtasks?.size() ?: 0}">0</span> done
+                    </div>
+                    <div class="progress">
+                        <div class="progress-fill"
+                             th:style="'width:' + (${subtasks.size() > 0} ? (${subtasks.?[completed].size() * 100 / subtasks.size()}) : 0) + '%'"></div>
+                    </div>
+                </div>
+
+                <div th:if="${isAdmin}" class="card-custom" style="border-color:#FECACA;">
+                    <div style="font-weight:600; font-size:0.85rem; color:var(--danger); margin-bottom:12px;">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Danger Zone
+                    </div>
+                    <form th:action="@{/tasks/{id}/delete(id=${task.id})}" method="post">
+                        <button type="submit" class="btn-danger-custom w-100"
+                                style="justify-content:center;"
+                                onclick="return confirm('Delete this task?')">
+                            <i class="bi bi-trash"></i> Delete Task
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
