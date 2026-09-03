@@ -61,14 +61,5 @@ public class Task {
         TODO, IN_PROGRESS, IN_REVIEW, DONE
     }
 
-    @Enumerated(EnumType.STRING)
-    private DevelopmentStatus developmentStatus;
 
-    public enum DevelopmentStatus{
-        NOT_STARTED,
-        CODING,
-        PR_OPEN,
-        REVIEW_APPROVED,
-        MERGED
-    }
 }
