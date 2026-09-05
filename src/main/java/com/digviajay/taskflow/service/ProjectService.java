@@ -1,5 +1,6 @@
 package com.digviajay.taskflow.service;
 
+import com.digviajay.taskflow.entity.Company;
 import com.digviajay.taskflow.entity.Project;
 import com.digviajay.taskflow.entity.ProjectMember;
 import com.digviajay.taskflow.entity.User;
@@ -21,10 +22,9 @@ public class ProjectService {
         Project project = new Project();
         project.setName(name);
         project.setDescription(description);
-        project.setUser(creator);
+        project.setCompany(creator.getCompany());         // V2: scope to company
         Project saved = projectRepository.save(project);
 
-        // creator automatically becomes ADMIN member
         ProjectMember adminMember = new ProjectMember();
         adminMember.setProject(saved);
         adminMember.setUser(creator);
@@ -39,22 +39,18 @@ public class ProjectService {
                 .orElseThrow(() -> new RuntimeException("Project not found"));
     }
 
+    // V2: all projects user is a member of (includes ones they created as ADMIN)
     public List<Project> getProjectsForUser(User user) {
-        // projects they created
-        List<Project> created = projectRepository.findByUserOrderByCreatedAtDesc(user);
-
-        // projects they are a member of (but didn't create)
-        List<Project> memberOf = projectMemberRepository
+        return projectMemberRepository
                 .findByUserOrderByJoinedAtDesc(user)
                 .stream()
                 .map(ProjectMember::getProject)
-                .filter(p -> !p.getUser().getId().equals(user.getId()))
                 .toList();
+    }
 
-        // merge both
-        List<Project> all = new java.util.ArrayList<>(created);
-        all.addAll(memberOf);
-        return all;
+    // V2: all projects in a company (for company overview page)
+    public List<Project> getProjectsForCompany(Company company) {
+        return projectRepository.findByCompanyOrderByCreatedAtDesc(company);
     }
 
     public List<ProjectMember> getMembersOfProject(Long projectId) {
@@ -62,8 +58,16 @@ public class ProjectService {
         return projectMemberRepository.findByProject(project);
     }
 
-    public void addMemberToProject(Long projectId, User userToAdd) {
+    // V2: only search users from same company
+    public void addMemberToProject(Long projectId, User userToAdd, User requestingUser) {
         Project project = findById(projectId);
+
+        if (!project.getCompany().getId().equals(userToAdd.getCompany().getId()))
+            throw new RuntimeException("Cannot add user from a different company");
+
+        if (!isAdminOfProject(requestingUser, project))
+            throw new RuntimeException("Only project admin can add members");
+
         if (projectMemberRepository.existsByProjectAndUser(project, userToAdd))
             throw new RuntimeException("User is already a member");
 
@@ -74,8 +78,16 @@ public class ProjectService {
         projectMemberRepository.save(member);
     }
 
-    public void removeMemberFromProject(Long projectId, Long userId) {
+    public void removeMemberFromProject(Long projectId, Long userId, User requestingUser) {
         Project project = findById(projectId);
+
+        if (!isAdminOfProject(requestingUser, project))
+            throw new RuntimeException("Only project admin can remove members");
+
+        // prevent admin removing themselves
+        if (requestingUser.getId().equals(userId))
+            throw new RuntimeException("Project admin cannot remove themselves");
+
         projectMemberRepository.findByProject(project).stream()
                 .filter(m -> m.getUser().getId().equals(userId))
                 .findFirst()
@@ -88,15 +100,30 @@ public class ProjectService {
                 .orElse(false);
     }
 
-    public void updateProject(Long id, String name, String description, Project.ProjectStatus status) {
+    // V2: check user belongs to same company as project before any access
+    public boolean isMemberOfProject(User user, Project project) {
+        return projectMemberRepository.existsByProjectAndUser(project, user);
+    }
+
+    public void updateProject(Long id, String name, String description,
+                              Project.ProjectStatus status, User requestingUser) {
         Project project = findById(id);
+
+        if (!isAdminOfProject(requestingUser, project))
+            throw new RuntimeException("Only project admin can update project");
+
         project.setName(name);
         project.setDescription(description);
         project.setStatus(status);
         projectRepository.save(project);
     }
 
-    public void deleteProject(Long id) {
+    public void deleteProject(Long id, User requestingUser) {
+        Project project = findById(id);
+
+        if (!isAdminOfProject(requestingUser, project))
+            throw new RuntimeException("Only project admin can delete project");
+
         projectRepository.deleteById(id);
     }
 }

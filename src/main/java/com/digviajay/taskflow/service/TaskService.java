@@ -33,8 +33,9 @@ public class TaskService {
                 .orElseThrow(() -> new RuntimeException("Task not found"));
     }
 
-    public List<Task> getTasksByProject(Project project) {
-        return taskRepository.findByProjectOrderByCreatedAtDesc(project);
+    public List<Task> getTasksByProjects(List<Project> projects) {
+        if (projects.isEmpty()) return List.of();
+        return taskRepository.findByProjectIn(projects);
     }
 
     public List<Task> getTasksAssignedToUser(User user) {

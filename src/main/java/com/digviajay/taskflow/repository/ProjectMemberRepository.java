@@ -1,5 +1,6 @@
 package com.digviajay.taskflow.repository;
 
+import com.digviajay.taskflow.entity.Company;
 import com.digviajay.taskflow.entity.Project;
 import com.digviajay.taskflow.entity.ProjectMember;
 import com.digviajay.taskflow.entity.User;
@@ -13,4 +14,9 @@ public interface ProjectMemberRepository extends JpaRepository<ProjectMember, Lo
     List<ProjectMember> findByUserOrderByJoinedAtDesc(User user);
     Optional<ProjectMember> findByProjectAndUser(Project project, User user);
     boolean existsByProjectAndUser(Project project, User user);
+    // V2 — needed to find project admin
+    Optional<ProjectMember> findByProjectAndRole(Project project, ProjectMember.ProjectRole role);
+
+    // V2 — needed for company-level isolation check
+    List<ProjectMember> findByUserAndProject_Company(User user, Company company);
 }

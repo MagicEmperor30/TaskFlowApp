@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${company.name} + ' | TaskFlow'">Company | TaskFlow</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #2563EB;
+            --primary-dark: #1D4ED8;
+            --secondary: #8B5CF6;
+            --text-dark: #0F172A;
+            --text-gray: #64748B;
+            --text-light: #94A3B8;
+            --bg-light: #F8FAFC;
+            --bg-lighter: #F1F5F9;
+            --border-color: #E2E8F0;
+            --success: #10B981;
+            --danger: #EF4444;
+            --sidebar-width: 260px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-dark);
+            background: var(--bg-light);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* ── Sidebar ── */
+        .sidebar {
+            width: var(--sidebar-width);
+            background: white;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0; left: 0;
+            height: 100vh;
+            z-index: 50;
+        }
+
+        .sidebar-logo {
+            padding: 24px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .logo-text {
+            font-family: 'Poppins', sans-serif;
+            font-size: 22px;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 16px 12px;
+            overflow-y: auto;
+        }
+
+        .nav-section-title {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-light);
+            padding: 8px 8px 4px;
+            margin-top: 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: var(--text-gray);
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            margin-bottom: 2px;
+        }
+
+        .nav-item:hover { background: var(--bg-light); color: var(--text-dark); }
+        .nav-item.active { background: #EFF6FF; color: var(--primary); font-weight: 600; }
+        .nav-item i { font-size: 18px; }
+
+        .sidebar-footer {
+            padding: 16px 12px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            background: var(--bg-light);
+            margin-bottom: 8px;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .user-details { flex: 1; min-width: 0; }
+        .user-name { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-role { font-size: 11px; color: var(--text-light); }
+
+        .btn-logout {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            padding: 10px 12px;
+            border: none;
+            background: none;
+            color: var(--text-gray);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 10px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-logout:hover { background: #FEF2F2; color: var(--danger); }
+
+        /* ── Main Content ── */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            flex: 1;
+            padding: 32px;
+            min-height: 100vh;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .page-title-group h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--text-dark);
+            margin-bottom: 4px;
+        }
+
+        .page-title-group p {
+            font-size: 14px;
+            color: var(--text-gray);
+        }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
+        }
+
+        /* ── Invite Link Banner ── */
+        .invite-banner {
+            background: linear-gradient(135deg, #EFF6FF, #F5F3FF);
+            border: 2px solid #BFDBFE;
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-bottom: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            animation: slideDown 0.4s ease;
+        }
+
+        .invite-banner-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .invite-banner-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .invite-banner-text { flex: 1; min-width: 0; }
+        .invite-banner-label {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .invite-link-display {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: white;
+            border: 1px solid #BFDBFE;
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin-top: 8px;
+        }
+
+        .invite-link-display code {
+            font-family: 'Inter', monospace;
+            font-size: 13px;
+            color: var(--text-dark);
+            word-break: break-all;
+            flex: 1;
+        }
+
+        .btn-copy {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .btn-copy:hover { background: var(--primary-dark); }
+        .btn-copy.copied { background: var(--success); }
+
+        .invite-expiry {
+            font-size: 12px;
+            color: var(--text-gray);
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* ── Stats Row ── */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 20px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-family: 'Poppins', sans-serif;
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--text-dark);
+        }
+
+        /* ── Members Table ── */
+        .card {
+            background: white;
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-header h2 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .member-count {
+            background: var(--bg-lighter);
+            color: var(--text-gray);
+            font-size: 13px;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead th {
+            padding: 12px 24px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-light);
+            background: var(--bg-light);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--border-color);
+            transition: background 0.15s ease;
+        }
+
+        tbody tr:last-child { border-bottom: none; }
+        tbody tr:hover { background: var(--bg-light); }
+
+        tbody td {
+            padding: 16px 24px;
+            font-size: 14px;
+            vertical-align: middle;
+        }
+
+        .member-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .member-avatar {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .member-name { font-weight: 600; color: var(--text-dark); }
+        .member-email { font-size: 13px; color: var(--text-gray); }
+
+        .role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .role-admin {
+            background: #EFF6FF;
+            color: var(--primary);
+        }
+
+        .role-member {
+            background: var(--bg-lighter);
+            color: var(--text-gray);
+        }
+
+        .you-badge {
+            background: #F0FDF4;
+            color: var(--success);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 6px;
+        }
+
+        .empty-state {
+            padding: 60px 24px;
+            text-align: center;
+            color: var(--text-gray);
+        }
+
+        .empty-state i { font-size: 40px; margin-bottom: 12px; color: var(--text-light); }
+        .empty-state p { font-size: 15px; }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main-content { margin-left: 0; padding: 20px; }
+            .page-header { flex-direction: column; }
+            thead th:nth-child(3), tbody td:nth-child(3) { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <a href="/dashboard" class="logo-text">
+            <i class="bi bi-check2-square"></i> TaskFlow
+        </a>
+    </div>
+
+    <nav class="sidebar-nav">
+        <a href="/dashboard" class="nav-item"><i class="bi bi-grid-1x2"></i> Dashboard</a>
+        <a href="/projects" class="nav-item"><i class="bi bi-folder2-open"></i> Projects</a>
+        <a href="/tasks/my" class="nav-item"><i class="bi bi-check2-square"></i> My Tasks</a>
+
+        <div class="nav-section-title">Company</div>
+        <a href="/company" class="nav-item active"><i class="bi bi-building"></i> Members</a>
+
+        <div class="nav-section-title">Account</div>
+        <a href="/profile" class="nav-item"><i class="bi bi-person"></i> Profile</a>
+    </nav>
+
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="user-avatar" th:text="${#strings.toUpperCase(#strings.substring(user.username, 0, 1))}">D</div>
+            <div class="user-details">
+                <div class="user-name" th:text="${user.username}">Username</div>
+                <div class="user-role" th:text="${user.companyRole}">MEMBER</div>
+            </div>
+        </div>
+        <a href="/logout" class="btn-logout"><i class="bi bi-box-arrow-left"></i> Sign Out</a>
+    </div>
+</aside>
+
+<!-- Main Content -->
+<main class="main-content">
+
+    <div class="page-header">
+        <div class="page-title-group">
+            <h1 th:text="${company.name}">Company Name</h1>
+            <p>Manage your team members and invite new people</p>
+        </div>
+
+        <!-- Invite button — admin only -->
+        <form th:if="${isAdmin}" action="/company/invite" method="post">
+            <button type="submit" class="btn-primary">
+                <i class="bi bi-link-45deg"></i> Generate Invite Link
+            </button>
+        </form>
+    </div>
+
+    <!-- Invite link banner — shown after generating -->
+    <div class="invite-banner" th:if="${inviteUrl}">
+        <div class="invite-banner-left">
+            <div class="invite-banner-icon">
+                <i class="bi bi-link-45deg"></i>
+            </div>
+            <div class="invite-banner-text">
+                <div class="invite-banner-label">Invite Link Ready</div>
+                <div class="invite-link-display">
+                    <code id="inviteLinkText" th:text="${'http://localhost:8080' + inviteUrl}">link</code>
+                    <button class="btn-copy" id="copyBtn" onclick="copyInviteLink()">
+                        <i class="bi bi-clipboard"></i> Copy
+                    </button>
+                </div>
+                <div class="invite-expiry">
+                    <i class="bi bi-clock"></i> Expires in 7 days · Single use
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-label">Total Members</div>
+            <div class="stat-value" th:text="${members.size()}">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Company</div>
+            <div class="stat-value" style="font-size:18px; padding-top:6px;" th:text="${company.slug}">slug</div>
+        </div>
+    </div>
+
+    <!-- Members Table -->
+    <div class="card">
+        <div class="card-header">
+            <h2>Team Members</h2>
+            <span class="member-count" th:text="${members.size()} + ' members'">0 members</span>
+        </div>
+
+        <div th:if="${members.isEmpty()}" class="empty-state">
+            <i class="bi bi-people"></i>
+            <p>No members yet. Generate an invite link to add your team.</p>
+        </div>
+
+        <table th:unless="${members.isEmpty()}">
+            <thead>
+            <tr>
+                <th>Member</th>
+                <th>Role</th>
+                <th>Joined</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="member : ${members}">
+                <td>
+                    <div class="member-cell">
+                        <div class="member-avatar"
+                             th:text="${#strings.toUpperCase(#strings.substring(member.username, 0, 1))}">A</div>
+                        <div>
+                            <div class="member-name">
+                                <span th:text="${member.username}">Username</span>
+                                <span class="you-badge" th:if="${member.id == user.id}">You</span>
+                            </div>
+                            <div class="member-email" th:text="${member.email}">email@example.com</div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                        <span class="role-badge"
+                              th:classappend="${member.companyRole.name() == 'ADMIN'} ? 'role-admin' : 'role-member'"
+                              th:text="${member.companyRole}">MEMBER</span>
+                </td>
+                <td th:text="${#temporals.format(member.createdAt, 'MMM dd, yyyy')}">Jan 01, 2025</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</main>
+
+<script>
+    function copyInviteLink() {
+        const link = document.getElementById('inviteLinkText').textContent;
+        const btn = document.getElementById('copyBtn');
+        navigator.clipboard.writeText(link).then(() => {
+            btn.innerHTML = '<i class="bi bi-check2"></i> Copied!';
+            btn.classList.add('copied');
+            setTimeout(() => {
+                btn.innerHTML = '<i class="bi bi-clipboard"></i> Copy';
+                btn.classList.remove('copied');
+            }, 3000);
+        });
+    }
+</script>
+
+</body>
+</html>

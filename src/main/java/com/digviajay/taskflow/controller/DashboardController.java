@@ -46,10 +46,15 @@ public class DashboardController {
                 .filter(t -> t.getStatus() == Task.TaskStatus.DONE).count();
         long pendingTasks = myTasks.size() - completedTasks;
 
-        // progress per project
+        // fetch all tasks for all projects in ONE query instead of one per project
+        List<Task> allProjectTasks = taskService.getTasksByProjects(projects);
+
         Map<Long, Integer> projectProgressMap = new HashMap<>();
         for (Project project : projects) {
-            List<Task> tasks = taskService.getTasksByProject(project);
+            List<Task> tasks = allProjectTasks.stream()
+                    .filter(t -> t.getProject().getId().equals(project.getId()))
+                    .toList();
+
             if (tasks.isEmpty()) {
                 projectProgressMap.put(project.getId(), 0);
             } else {

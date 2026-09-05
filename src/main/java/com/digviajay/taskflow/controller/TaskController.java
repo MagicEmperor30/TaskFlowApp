@@ -67,11 +67,15 @@ public class TaskController {
         if (loggedInUser == null) return "redirect:/login";
 
         Task task = taskService.findById(id);
+
+        // V2: block cross-company access
+        if (!task.getProject().getCompany().getId().equals(loggedInUser.getCompany().getId()))
+            return "redirect:/dashboard";
+
         List<Subtask> subtasks = subtaskService.getSubtasksByTask(task);
         boolean isAdmin = projectService.isAdminOfProject(loggedInUser, task.getProject());
-        long completedCount = task.getSubtasks().stream()
-                .filter(Subtask::isCompleted)
-                .count();
+        long completedCount = subtasks.stream().filter(Subtask::isCompleted).count();
+
         model.addAttribute("task", task);
         model.addAttribute("subtasks", subtasks);
         model.addAttribute("statuses", Task.TaskStatus.values());

@@ -19,15 +19,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 
 @Controller
+@RequiredArgsConstructor
 @RequestMapping("/profile")
 public class ProfileController {
 
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private ProjectService projectService;
-    @Autowired
-    private TaskService taskService;
+    private final UserService userService;
+    private final ProjectService projectService;
+    private final TaskService taskService;
 
     @GetMapping
     public String profile(Model model, HttpSession session) {

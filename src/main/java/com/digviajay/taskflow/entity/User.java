@@ -34,15 +34,28 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id",nullable = false)
+    private Company company;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "company_role", nullable = false)
+    private CompanyRole companyRole = CompanyRole.MEMBER;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Project> createdProjects;
+//    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+//    private List<Project> createdProjects;
 
     @OneToMany(mappedBy = "assignedUser")
     private List<Task> assignedTasks;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProjectMember> projectMemberships;
+
+    public enum CompanyRole {
+        ADMIN, MEMBER
+    }
+
 }

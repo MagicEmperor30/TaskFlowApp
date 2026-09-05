@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register | TaskFlow</title>
+    <title>Join Team | TaskFlow</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,13 +17,11 @@
         :root {
             --primary: #2563EB;
             --primary-dark: #1D4ED8;
-            --primary-light: #3B82F6;
             --secondary: #8B5CF6;
             --text-dark: #0F172A;
             --text-gray: #64748B;
             --text-light: #94A3B8;
             --bg-light: #F8FAFC;
-            --bg-lighter: #F1F5F9;
             --border-color: #E2E8F0;
             --success: #10B981;
             --danger: #EF4444;
@@ -49,17 +47,6 @@
             background: radial-gradient(circle at 20% 50%, rgba(37, 99, 235, 0.1) 0%, transparent 50%),
                         radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
             animation: moveGradient 15s ease-in-out infinite;
-            z-index: -1;
-            pointer-events: none;
-        }
-
-        body::after {
-            content: '';
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: radial-gradient(circle at 100% 0%, rgba(139, 92, 246, 0.05) 0%, transparent 40%),
-                        radial-gradient(circle at 0% 100%, rgba(37, 99, 235, 0.05) 0%, transparent 40%);
             z-index: -1;
             pointer-events: none;
         }
@@ -99,15 +86,6 @@
 
         .navbar-logo:hover { transform: scale(1.05); }
         .navbar-logo i { font-size: 26px; }
-
-        .nav-link {
-            color: var(--text-dark);
-            text-decoration: none;
-            font-weight: 600;
-            transition: color 0.3s ease;
-        }
-
-        .nav-link:hover { color: var(--primary); }
 
         .auth-container {
             display: grid;
@@ -153,7 +131,7 @@
             position: absolute;
             top: 0; left: 0; right: 0;
             height: 4px;
-            background: linear-gradient(90deg, var(--secondary) 0%, var(--primary) 100%);
+            background: linear-gradient(90deg, var(--success) 0%, var(--primary) 100%);
         }
 
         .auth-card h1 {
@@ -167,7 +145,51 @@
         .auth-card .subtitle {
             font-size: 14px;
             color: var(--text-gray);
-            margin-bottom: 32px;
+            margin-bottom: 24px;
+        }
+
+        /* Company badge shown on the join page */
+        .company-badge {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: linear-gradient(135deg, #EFF6FF, #F5F3FF);
+            border: 2px solid #BFDBFE;
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 28px;
+        }
+
+        .company-badge-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .company-badge-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .company-badge-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-light);
+        }
+
+        .company-badge-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-dark);
         }
 
         .form-group { margin-bottom: 20px; }
@@ -193,9 +215,9 @@
 
         .form-group input:focus {
             outline: none;
-            border-color: var(--secondary);
+            border-color: var(--primary);
             background: white;
-            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
         }
 
         .form-group input::placeholder { color: var(--text-light); }
@@ -212,33 +234,10 @@
         .password-requirement.met { color: var(--success); }
         .password-requirement i { font-size: 14px; }
 
-        .terms-checkbox {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            margin-bottom: 24px;
-            font-size: 13px;
-            color: var(--text-gray);
-        }
-
-        .terms-checkbox input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            margin-top: 2px;
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-
-        .terms-checkbox a {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 600;
-        }
-
         .btn-auth {
             width: 100%;
             padding: 14px 24px;
-            background: linear-gradient(135deg, var(--secondary) 0%, var(--primary) 100%);
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
             border: none;
             border-radius: 12px;
@@ -247,8 +246,7 @@
             font-weight: 700;
             cursor: pointer;
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
+            margin-top: 8px;
         }
 
         .btn-auth:hover {
@@ -260,7 +258,7 @@
 
         .auth-footer {
             text-align: center;
-            margin-top: 28px;
+            margin-top: 24px;
             font-size: 14px;
             color: var(--text-gray);
         }
@@ -269,17 +267,9 @@
             color: var(--primary);
             text-decoration: none;
             font-weight: 700;
-            transition: color 0.3s ease;
         }
 
         .auth-footer a:hover { color: var(--primary-dark); }
-
-        .auth-footer .invite-hint {
-            display: block;
-            margin-top: 10px;
-            font-size: 12px;
-            color: var(--text-light);
-        }
 
         .error-message {
             background: #FEE2E2;
@@ -297,30 +287,6 @@
         }
 
         .error-message i { font-size: 18px; }
-
-        .success-message {
-            background: #DCFCE7;
-            color: #15803D;
-            padding: 14px 16px;
-            border-radius: 10px;
-            border: 2px solid #BBF7D0;
-            margin-bottom: 24px;
-            font-size: 14px;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            animation: slideDown 0.3s ease;
-        }
-
-        .section-divider {
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--text-light);
-            margin: 4px 0 16px 0;
-        }
 
         @keyframes slideInLeft {
             from { opacity: 0; transform: translateX(-40px); }
@@ -364,47 +330,35 @@
     <a href="/" class="navbar-logo">
         <i class="bi bi-check2-square"></i> TaskFlow
     </a>
-    <a href="/login" class="nav-link">Sign In</a>
 </nav>
 
 <div class="auth-container">
     <div class="auth-animation">
-        <div class="animation-container" id="register-lottie"></div>
+        <div class="animation-container" id="join-lottie"></div>
     </div>
 
     <div class="auth-form-wrapper">
         <div class="auth-card">
-            <h1>Get Started</h1>
-            <p class="subtitle">Register your company and start managing projects with your team</p>
+            <h1>Join Your Team</h1>
+            <p class="subtitle">You've been invited to collaborate on TaskFlow</p>
+
+            <!-- Company badge -->
+            <div class="company-badge">
+                <div class="company-badge-icon">
+                    <i class="bi bi-building"></i>
+                </div>
+                <div class="company-badge-text">
+                    <span class="company-badge-label">Joining</span>
+                    <span class="company-badge-name" th:text="${companyName}">Company Name</span>
+                </div>
+            </div>
 
             <div th:if="${error}" class="error-message">
                 <i class="bi bi-exclamation-circle"></i>
                 <span th:text="${error}"></span>
             </div>
 
-            <div th:if="${success}" class="success-message">
-                <i class="bi bi-check-circle"></i>
-                <span th:text="${success}"></span>
-            </div>
-
-            <form method="post" action="/register" id="registerForm">
-
-                <p class="section-divider">Company Details</p>
-
-                <div class="form-group">
-                    <label for="companyName">Company Name</label>
-                    <input
-                            type="text"
-                            id="companyName"
-                            name="companyName"
-                            placeholder="Acme Inc."
-                            required
-                            autocomplete="organization"
-                    />
-                </div>
-
-                <p class="section-divider">Your Account</p>
-
+            <form th:action="@{/join/{token}(token=${token})}" method="post" id="joinForm">
                 <div class="form-group">
                     <label for="username">Your Name</label>
                     <input
@@ -453,19 +407,13 @@
                     </div>
                 </div>
 
-                <div class="terms-checkbox">
-                    <input type="checkbox" id="terms" name="terms" required />
-                    <label for="terms">
-                        I agree to the <a href="/terms">Terms of Service</a> and <a href="/privacy">Privacy Policy</a>
-                    </label>
-                </div>
-
-                <button type="submit" class="btn-auth">Create Company Account</button>
+                <button type="submit" class="btn-auth">
+                    <i class="bi bi-person-check"></i> Create Account &amp; Join Team
+                </button>
             </form>
 
             <div class="auth-footer">
                 Already have an account? <a href="/login">Sign in</a>
-                <span class="invite-hint">Joining a team? Use the invite link sent by your admin.</span>
             </div>
         </div>
     </div>
@@ -473,17 +421,14 @@
 
 <script>
     lottie.loadAnimation({
-        container: document.getElementById('register-lottie'),
+        container: document.getElementById('join-lottie'),
         renderer: 'svg',
         loop: true,
         autoplay: true,
-        path: 'https://assets8.lottiefiles.com/packages/lf20_w3qvuonc.json'
+        path: 'https://assets3.lottiefiles.com/packages/lf20_jcikwtux.json'
     });
 
     const passwordInput = document.getElementById('password');
-    const passwordLength = document.getElementById('passwordLength');
-    const passwordUpper = document.getElementById('passwordUpper');
-    const passwordNumber = document.getElementById('passwordNumber');
 
     function setMet(el, met) {
         const icon = el.querySelector('i');
@@ -498,14 +443,9 @@
 
     passwordInput.addEventListener('input', function () {
         const v = this.value;
-        setMet(passwordLength, v.length >= 8);
-        setMet(passwordUpper, /[A-Z]/.test(v));
-        setMet(passwordNumber, /\d/.test(v));
-    });
-
-    document.querySelectorAll('.form-group input').forEach(input => {
-        input.addEventListener('focus', function () { this.parentElement.classList.add('focused'); });
-        input.addEventListener('blur', function () { this.parentElement.classList.remove('focused'); });
+        setMet(document.getElementById('passwordLength'), v.length >= 8);
+        setMet(document.getElementById('passwordUpper'), /[A-Z]/.test(v));
+        setMet(document.getElementById('passwordNumber'), /\d/.test(v));
     });
 </script>
 

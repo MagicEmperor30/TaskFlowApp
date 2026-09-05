@@ -41,7 +41,7 @@ public class ProjectController {
 
         for (Project project : projects) {
 
-            List<Task> tasks = taskService.getTasksByProject(project);
+            List<Task> tasks = taskService.getTasksByProjects(projects);
 
             if (tasks.isEmpty()) {
                 projectProgressMap.put(project.getId(), 0);
@@ -87,6 +87,11 @@ public class ProjectController {
         if (loggedInUser == null) return "redirect:/login";
 
         Project project = projectService.findById(id);
+
+        // V2: block cross-company access
+        if (!project.getCompany().getId().equals(loggedInUser.getCompany().getId()))
+            return "redirect:/projects";
+
         List<ProjectMember> members = projectService.getMembersOfProject(id);
         boolean isAdmin = projectService.isAdminOfProject(loggedInUser, project);
 
@@ -106,11 +111,11 @@ public class ProjectController {
         if (loggedInUser == null) return "redirect:/login";
 
         Project project = projectService.findById(id);
-        if (!projectService.isAdminOfProject(loggedInUser, project)) {
+        if (!projectService.isAdminOfProject(loggedInUser, project))
             return "redirect:/projects/" + id;
-        }
 
-        List<User> results = userService.searchUsers(keyword);
+        // V2: search within same company only
+        List<User> results = userService.searchUsers(keyword, loggedInUser.getCompany());
         List<ProjectMember> members = projectService.getMembersOfProject(id);
 
         model.addAttribute("project", project);
@@ -121,6 +126,7 @@ public class ProjectController {
         return "projects/detail";
     }
 
+
     @PostMapping("/{id}/add-member/{userId}")
     public String confirmAddMember(@PathVariable Long id,
                                    @PathVariable Long userId,
@@ -128,24 +134,22 @@ public class ProjectController {
         User loggedInUser = (User) session.getAttribute("loggedInUser");
         if (loggedInUser == null) return "redirect:/login";
 
-        Project project = projectService.findById(id);
-        if (projectService.isAdminOfProject(loggedInUser, project)) {
-            User userToAdd = userService.findById(userId);
-            projectService.addMemberToProject(id, userToAdd);
-        }
+        User userToAdd = userService.findById(userId);
+        // V2: pass requestingUser so service can check admin + company
+        projectService.addMemberToProject(id, userToAdd, loggedInUser);
         return "redirect:/projects/" + id;
     }
+
 
     @PostMapping("/{id}/delete")
     public String deleteProject(@PathVariable Long id, HttpSession session) {
         User loggedInUser = (User) session.getAttribute("loggedInUser");
         if (loggedInUser == null) return "redirect:/login";
 
-        Project project = projectService.findById(id);
-        if (projectService.isAdminOfProject(loggedInUser, project)) {
-            projectService.deleteProject(id);
-        }
+        // V2: pass requestingUser — service enforces admin check
+        projectService.deleteProject(id, loggedInUser);
         return "redirect:/projects";
     }
+
 
 }

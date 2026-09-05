@@ -36,6 +36,6 @@ public class ProjectMember {
     private LocalDateTime joinedAt = LocalDateTime.now();
 
     public enum ProjectRole {
-        ADMIN, MEMBER
+        ADMIN,MEMBER
     }
 }

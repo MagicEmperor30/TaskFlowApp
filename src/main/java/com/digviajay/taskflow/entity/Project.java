@@ -13,8 +13,8 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = {"user", "tasks", "members"})
-@EqualsAndHashCode(exclude = {"user", "tasks", "members"})
+@ToString(exclude = {"tasks", "members"})
+@EqualsAndHashCode(exclude = {"tasks", "members"})
 public class Project {
 
     @Id
@@ -37,8 +37,8 @@ public class Project {
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "company_id", nullable = false)
+    private Company company;
 
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Task> tasks;
